@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import { runScan, validateTarget } from './scanner.js';
 import { generateVerifyToken, verifyDomain } from './verify.js';
 import { recordScan, getScan, recordVerification, isVerified, recordPayment } from './store.js';
+import { checkPayment, createPaymentRequiredResponse, CONFIG as PAYMENT_CONFIG } from './payments.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -24,8 +25,15 @@ fastify.get('/', async () => {
     company: 'SecurityforTech',
     description: 'Automated security scanning service',
     pricing: {
-      basic_scan: '$1 - Port scan + vulnerability detection',
-      deep_scan: '$5 - Full port range + aggressive detection'
+      basic_scan: '$1 USDC - Port scan + vulnerability detection',
+      deep_scan: '$5 USDC - Full port range + aggressive detection'
+    },
+    payment: {
+      method: 'x402 (HTTP 402 Payment Required)',
+      chain: 'Base',
+      asset: 'USDC',
+      recipient: PAYMENT_CONFIG.RECIPIENT,
+      flow: 'POST /scan → 402 with payment details → pay on-chain → retry with x-402-payment-proof header'
     },
     endpoints: {
       'GET /': 'Service info',
@@ -124,8 +132,19 @@ fastify.post('/scan', async (request, reply) => {
     }
   }
   
-  // TODO: Payment verification via x402
-  // For now, we proceed directly
+  // Payment verification via x402
+  const skipPayment = request.body?.skipPayment === true;
+  if (!skipPayment) {
+    const paymentCheck = await checkPayment(request, type);
+    if (!paymentCheck.paid) {
+      return reply
+        .status(paymentCheck.statusCode)
+        .headers(paymentCheck.headers || {})
+        .send(paymentCheck.body);
+    }
+    // Payment verified - log it
+    console.log(`[secops-bot] Payment verified: ${paymentCheck.payment.txHash}`);
+  }
   
   console.log(`[secops-bot] Starting ${type} scan for ${cleanTarget}`);
   

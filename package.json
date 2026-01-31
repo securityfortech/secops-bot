@@ -12,11 +12,18 @@
     "type": "git",
     "url": "https://github.com/securityfortech/secops-bot.git"
   },
-  "keywords": ["security", "scanner", "nuclei", "nmap", "pentest"],
+  "keywords": [
+    "security",
+    "scanner",
+    "nuclei",
+    "nmap",
+    "pentest"
+  ],
   "author": "SecurityforTech",
   "license": "MIT",
   "dependencies": {
     "fastify": "^5.0.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "viem": "^2.45.1"
   }
 }
