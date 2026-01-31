@@ -2,7 +2,8 @@ import Fastify from 'fastify';
 import { runScan, validateTarget } from './scanner.js';
 import { generateVerifyToken, verifyDomain } from './verify.js';
 import { recordScan, getScan, recordVerification, isVerified, recordPayment } from './store.js';
-import { checkPayment, createPaymentRequiredResponse, CONFIG as PAYMENT_CONFIG } from './payments.js';
+import payments from './payments.js';
+const { checkPayment, createPaymentRequiredResponse, CONFIG: PAYMENT_CONFIG } = payments;
 
 const fastify = Fastify({ logger: true });
 
