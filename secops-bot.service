@@ -1,0 +1,16 @@
+[Unit]
+Description=secops-bot - Automated Security Scanning Service
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/home/ec2-user/.openclaw/workspace/secops-bot
+ExecStart=/home/ec2-user/.nvm/versions/node/v24.13.0/bin/node src/index.js
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=PORT=3001
+
+[Install]
+WantedBy=multi-user.target
